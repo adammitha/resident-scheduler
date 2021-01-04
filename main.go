@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println(scheduler.BlockDates("2020-12-01"))
+	fmt.Println(scheduler.Residents("residents.csv"))
 }
