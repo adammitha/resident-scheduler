@@ -1,41 +1,35 @@
 package scheduler
 
-import (
-	"log"
-
-	"github.com/rickb777/date"
-)
-
-// Resident is a resident's full name and their preferred week on call
-type Resident struct {
-	Name          string
-	PreferredWeek int
+// Solution is the 'node' in the tree we are searching for our optimal solution
+type Solution struct {
+	Filled  []Day // List of days with slots filled
+	Pending []Day // List of days with slots not yet filled
 }
 
-// Day is the day's number in a given block, the date, and the residents assigned to that Day
-type Day struct {
-	ID    int
-	Date  date.Date
-	Oak   *Resident
-	Maple *Resident
+var fnForSol func(Solution) Solution
+var fnForLOS func([]Solution) Solution
+
+func nextSolns(sol Solution) []Solution {
+	return []Solution{
+		sol,
+	}
 }
 
-// BlockDates returns a slice of days for a block given the block's start date
-func BlockDates(start string) []Day {
-	startDate, err := date.AutoParse(start)
-	if err != nil {
-		log.Fatal("Error parsing start date.")
+// FillSchedule produces a []Day with all of the call slots filled
+func FillSchedule(startDate string, residents []Resident) Solution {
+	fnForSol = func(sol Solution) Solution {
+		if len(sol.Pending) == 0 {
+			return sol
+		}
+		return fnForLOS(nextSolns(sol))
 	}
 
-	var dates []Day
-	for i := 0; i < 28; i++ {
-		dates = append(dates, Day{
-			ID:    i,
-			Date:  startDate.Add(date.PeriodOfDays(i)),
-			Oak:   nil,
-			Maple: nil,
-		})
+	fnForLOS = func(los []Solution) Solution {
+		return los[0]
 	}
 
-	return dates
+	return fnForSol(Solution{
+		Filled:  make([]Day, 28),
+		Pending: make([]Day, 28)},
+	)
 }
